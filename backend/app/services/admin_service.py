@@ -1,8 +1,12 @@
 from ..core.chain_instance import get_chain
 from ..core.database import get_connection
+from .audit_service import AuditService
 
 
 class AdminService:
+    def __init__(self, audit_service: AuditService | None = None) -> None:
+        self.audit_service = audit_service or AuditService()
+
     def get_dashboard_stats(self) -> dict:
         with get_connection() as conn:
             cursor = conn.cursor()
@@ -58,3 +62,12 @@ class AdminService:
             if row.get("created_at"):
                 row["created_at"] = row["created_at"].isoformat()
         return rows
+
+    def get_audit_logs(
+        self,
+        *,
+        limit: int = 50,
+        actor_voter_id: str | None = None,
+        action: str | None = None,
+    ) -> list:
+        return self.audit_service.list_logs(limit=limit, actor_voter_id=actor_voter_id, action=action)

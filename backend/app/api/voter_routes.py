@@ -3,9 +3,11 @@ from fastapi import APIRouter, Depends, Query
 from ..controllers.voter_controller import VoterController
 from ..core.dependencies import get_current_user, require_roles
 from ..schemas.voter_schema import VoterAdminUpdate, VoterProfileUpdate, VoterResponse
+from ..services.audit_service import AuditService
 
 router = APIRouter(prefix="/voters", tags=["Voters"])
 controller = VoterController()
+audit_service = AuditService()
 
 
 @router.get("/", response_model=list[VoterResponse])
@@ -28,7 +30,16 @@ def update_me(
     payload: VoterProfileUpdate,
     current_user: dict = Depends(get_current_user),
 ) -> VoterResponse:
-    return controller.update_profile(current_user["voter_id"], payload)
+    voter = controller.update_profile(current_user["voter_id"], payload)
+    audit_service.record_event(
+        action="voter.profile_update",
+        entity_type="voter",
+        actor_voter_id=current_user["voter_id"],
+        actor_role=current_user["role"],
+        entity_id=voter.voter_id,
+        details={"email": voter.email, "name": voter.name},
+    )
+    return voter
 
 
 @router.get("/{voter_id}", response_model=VoterResponse)
@@ -46,5 +57,13 @@ def update_voter(
     payload: VoterAdminUpdate,
     current_user: dict = Depends(require_roles("admin")),
 ) -> VoterResponse:
-    _ = current_user
-    return controller.update_voter(voter_id, payload)
+    voter = controller.update_voter(voter_id, payload)
+    audit_service.record_event(
+        action="voter.admin_update",
+        entity_type="voter",
+        actor_voter_id=current_user["voter_id"],
+        actor_role=current_user["role"],
+        entity_id=voter.voter_id,
+        details={"email": voter.email, "name": voter.name, "role": voter.role, "has_voted": voter.has_voted},
+    )
+    return voter

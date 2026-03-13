@@ -86,16 +86,37 @@ def init_tables() -> None:
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
 
+    audit_logs_table_sql = """
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            log_id          VARCHAR(64)  PRIMARY KEY,
+            actor_voter_id  VARCHAR(64)  NULL,
+            actor_role      VARCHAR(32)  NULL,
+            action          VARCHAR(128) NOT NULL,
+            entity_type     VARCHAR(64)  NOT NULL,
+            entity_id       VARCHAR(64)  NULL,
+            details_json    LONGTEXT     NOT NULL,
+            created_at      DATETIME     NOT NULL,
+            INDEX idx_audit_created_at (created_at),
+            INDEX idx_audit_actor (actor_voter_id),
+            INDEX idx_audit_action (action)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(voter_table_sql)
         cursor.execute(elections_table_sql)
         cursor.execute(candidates_table_sql)
         cursor.execute(votes_table_sql)
+        cursor.execute(audit_logs_table_sql)
         # Migrations: add columns that may be missing from older installs
         _safe_alter(cursor, "ALTER TABLE candidates ADD COLUMN election_id VARCHAR(64) NOT NULL DEFAULT ''")
         _safe_alter(cursor, "ALTER TABLE candidates ADD COLUMN description TEXT NULL")
         _safe_alter(cursor, "ALTER TABLE votes ADD COLUMN tx_hash VARCHAR(64) NULL")
+        _safe_alter(cursor, "ALTER TABLE audit_logs ADD COLUMN actor_voter_id VARCHAR(64) NULL")
+        _safe_alter(cursor, "ALTER TABLE audit_logs ADD COLUMN actor_role VARCHAR(32) NULL")
+        _safe_alter(cursor, "ALTER TABLE audit_logs ADD COLUMN entity_id VARCHAR(64) NULL")
+        _safe_alter(cursor, "ALTER TABLE audit_logs ADD COLUMN details_json LONGTEXT NOT NULL")
         conn.commit()
         cursor.close()
 

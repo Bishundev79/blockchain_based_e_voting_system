@@ -15,3 +15,7 @@ class AuthController:
     def login(self, credentials: LoginRequest) -> AuthResponse:
         auth_payload = self.service.authenticate(credentials)
         return AuthResponse(**auth_payload)
+
+    def refresh(self, current_user: dict) -> AuthResponse:
+        auth_payload = self.service.refresh_access_token(current_user)
+        return AuthResponse(**auth_payload)
