@@ -33,13 +33,7 @@ const Navbar = () => {
   ];
 
   const adminLinks = [
-    { to: "/admin/dashboard", label: "Dashboard" },
-    { to: "/admin/elections", label: "Elections" },
-    { to: "/admin/candidates", label: "Candidates" },
-    { to: "/admin/voters", label: "Voters" },
-    { to: "/admin/results", label: "Results" },
-    { to: "/admin/votes", label: "Votes" },
-    { to: "/admin/blockchain", label: "Blockchain" },
+    { to: "/admin/dashboard", label: "Admin Area" },
   ];
 
   const links = [

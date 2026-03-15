@@ -4,8 +4,12 @@ from pydantic import BaseModel
 
 
 class VoteCastRequest(BaseModel):
+    vote_id: str
     election_id: str
     candidate_id: str
+    voter_id: str  # This is the public key
+    timestamp: str
+    signature: str
 
 
 class VoteResponse(BaseModel):

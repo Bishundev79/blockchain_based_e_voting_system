@@ -44,33 +44,24 @@ class VotingService:
         if self._has_voted(voter_id, payload.election_id):
             raise HTTPException(status.HTTP_409_CONFLICT, detail="You have already voted in this election")
 
-        vote_id = str(uuid4())
-        created_at = datetime.utcnow()
-
-        from blockchain.utils.keys import Wallet
-        # For scaffolding purposes: generate a one-off wallet for the anonymous voter
-        wallet = Wallet()
-        voter_public_key = wallet.public_key
-        
+        # Now constructing the transaction using the client-provided values
         tx = Transaction(
-            vote_id=vote_id,
-            voter_id=voter_public_key,  # Now strictly a public key
+            vote_id=payload.vote_id,
+            voter_id=payload.voter_id,  # This must be the public key hex provided by frontend
             candidate_id=payload.candidate_id,
             election_id=payload.election_id,
-            signature="", 
+            signature=payload.signature,
+            timestamp=payload.timestamp
         )
         
-        # Sign the transaction
-        tx.signature = wallet.sign_transaction(tx.to_signable_dict())
-
-        chain = get_chain()
-        
         # Validate signature before adding to mempool
-        if not tx.is_valid(voter_public_key):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Transaction signature invalid")
+        if not tx.is_valid(payload.voter_id):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Transaction signature is invalid")
             
+        chain = get_chain()
         chain.add_transaction(tx)
-        # We NO LONGER mine the block instantly. We persist the mempool state.
+        
+        # Persist the mempool state
         persist_chain()
         tx_hash = None
 
@@ -81,22 +72,19 @@ class VotingService:
                 cursor.execute(
                     "INSERT INTO votes (vote_id, election_id, voter_id, candidate_id, tx_hash, created_at) "
                     "VALUES (%s, %s, %s, %s, %s, %s)",
-                    (vote_id, payload.election_id, voter_id, payload.candidate_id, tx_hash, created_at),
+                    (payload.vote_id, payload.election_id, voter_id, payload.candidate_id, tx_hash, payload.timestamp),
                 )
-                # NOTE: We do NOT set has_voted=1 globally here.
-                # The UNIQUE (voter_id, election_id) constraint properly enforces
-                # one-vote-per-election. A voter may participate in multiple elections.
                 conn.commit()
                 cursor.close()
         except IntegrityError as exc:
             raise HTTPException(status.HTTP_409_CONFLICT, detail="You have already voted in this election") from exc
 
         return VoteResponse(
-            vote_id=vote_id,
+            vote_id=payload.vote_id,
             election_id=payload.election_id,
             candidate_id=payload.candidate_id,
             tx_hash=tx_hash,
-            created_at=created_at,
+            created_at=datetime.fromisoformat(payload.timestamp),
         )
 
     def get_results(self, election_id: str) -> ElectionResults:
@@ -113,15 +101,17 @@ class VotingService:
             candidates = cursor.fetchall()
             cursor.close()
 
-        with get_connection() as conn:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute(
-                "SELECT candidate_id, COUNT(*) AS vote_count FROM votes "
-                "WHERE election_id = %s GROUP BY candidate_id",
-                (election_id,),
-            )
-            tally = {row["candidate_id"]: row["vote_count"] for row in cursor.fetchall()}
-            cursor.close()
+        # Tally results directly from the blockchain for verifiable transparency
+        chain = get_chain()
+        if not chain.validate_chain():
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Blockchain data integrity check failed.")
+
+        tally = {c["candidate_id"]: 0 for c in candidates}
+        for block in chain.chain:
+            for tx in block.transactions:
+                if tx.election_id == election_id and tx.candidate_id in tally:
+                    # Depending on security logic, you might also `tx.is_valid()` again here.
+                    tally[tx.candidate_id] += 1
 
         with get_connection() as conn:
             cursor = conn.cursor()

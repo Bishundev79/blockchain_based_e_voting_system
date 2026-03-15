@@ -30,7 +30,8 @@ class Wallet:
         Takes a transaction dictionary (without the signature), stringifies it deterministically,
         and returns a DER-encoded hex signature.
         """
-        payload = json.dumps(tx_dict, sort_keys=True).encode("utf-8")
+        # separators=(',', ':') removes spaces to match JS JSON.stringify exactly
+        payload = json.dumps(tx_dict, sort_keys=True, separators=(',', ':')).encode("utf-8")
         signature = self._sk.sign(payload, hashfunc=hashlib.sha256, sigencode=sigencode_der)
         return signature.hex()
 
@@ -41,7 +42,7 @@ class Wallet:
         """
         try:
             vk = VerifyingKey.from_string(bytes.fromhex(public_key_hex), curve=SECP256k1)
-            payload = json.dumps(tx_dict, sort_keys=True).encode("utf-8")
+            payload = json.dumps(tx_dict, sort_keys=True, separators=(',', ':')).encode("utf-8")
             return vk.verify(
                 bytes.fromhex(signature_hex),
                 payload,

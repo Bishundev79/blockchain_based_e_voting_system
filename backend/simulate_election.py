@@ -5,6 +5,13 @@ import random
 import string
 import time
 import sys
+import uuid
+import datetime
+from pathlib import Path
+
+# Add project root to path to import blockchain package
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from blockchain.utils.keys import Wallet
 
 base_url = "http://localhost:8000/api"
 
@@ -41,11 +48,30 @@ if not admin_auth:
     sys.exit(1)
 admin_token = admin_auth["access_token"]
 
-# 2. Get active elections
+# 2. Get active elections or create one
 elections = make_request("GET", "/elections?status=active", token=admin_token)
 if not elections:
-    print("No active elections found to vote on.")
-    sys.exit(1)
+    print("No active elections found. Creating a sample election...")
+    election = make_request("POST", "/elections", {
+        "name": "General Election 2026",
+        "description": "Electing the new president.",
+        "status": "active"
+    }, token=admin_token)
+    
+    # Create candidates
+    print("Creating candidates for the election...")
+    for name, party in [("Alice Smith", "Party A"), ("Bob Jones", "Party B"), ("Charlie Brown", "Independent")]:
+        make_request("POST", "/candidates", {
+            "election_id": election["election_id"],
+            "name": name,
+            "party": party,
+            "description": "A great candidate."
+        }, token=admin_token)
+    
+    elections = make_request("GET", "/elections?status=active", token=admin_token)
+    if not elections:
+        print("Failed to setup sample election.")
+        sys.exit(1)
 
 # 3. Get candidates for each election
 election_candidates = {}
@@ -59,7 +85,7 @@ if not any(election_candidates.values()):
     sys.exit(1)
 
 # 4. Generate voters, register, login, and vote
-num_voters = 50
+num_voters = 30
 print(f"Simulating {num_voters} voters...")
 successful_votes = 0
 
@@ -83,7 +109,24 @@ for i in range(1, num_voters + 1):
         if not cand_ids:
             continue
         chosen_cand = random.choice(cand_ids)
-        vote_res = make_request("POST", "/votes/cast", {"election_id": eid, "candidate_id": chosen_cand}, token=token)
+
+        # Generate a wallet to simulate a frontend client making the vote
+        wallet = Wallet()
+        vote_id = str(uuid.uuid4())
+        timestamp = datetime.datetime.utcnow().isoformat()
+        
+        tx_payload = {
+            "vote_id": vote_id,
+            "voter_id": wallet.public_key,
+            "candidate_id": chosen_cand,
+            "election_id": eid,
+            "timestamp": timestamp,
+        }
+        signature = wallet.sign_transaction(tx_payload)
+        
+        tx_payload["signature"] = signature
+
+        vote_res = make_request("POST", "/votes/cast", tx_payload, token=token)
         if vote_res:
             successful_votes += 1
             print(f"Voter {i} voted in election {eid[:8]}...")

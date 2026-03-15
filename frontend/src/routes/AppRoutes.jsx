@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import MainLayout from "../components/layout/MainLayout";
+import AdminLayout from "../components/layout/AdminLayout";
 import Home from "../pages/public/Home";
 import About from "../pages/public/About";
 import HowVotingWorks from "../pages/public/HowVotingWorks";
@@ -22,122 +23,37 @@ import ProtectedRoute from "./ProtectedRoute";
 
 const AppRoutes = () => (
   <BrowserRouter>
-    <div className="min-h-screen">
-      <Navbar />
-      <Routes>
+    <Routes>
+      {/* Public and Voter Routes under MainLayout + Navbar */}
+      <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/how-it-works" element={<HowVotingWorks />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/voter/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <VoterDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/voter/vote"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <Vote />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/voter/results"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <VoterResults />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/voter/candidates"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <Candidates />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/voter/profile"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/voter/blockchain"
-          element={
-            <ProtectedRoute allowedRoles={["voter"]}>
-              <BlockchainExplorer />
-            </ProtectedRoute>
-          }
-        />
+        {/* Voter Restricted Routes */}
+        <Route path="/voter" element={<ProtectedRoute allowedRoles={["voter"]}><Outlet /></ProtectedRoute>}>
+          <Route path="dashboard" element={<VoterDashboard />} />
+          <Route path="vote" element={<Vote />} />
+          <Route path="results" element={<VoterResults />} />
+          <Route path="candidates" element={<Candidates />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="blockchain" element={<BlockchainExplorer />} />
+        </Route>
+      </Route>
 
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/elections"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <ElectionControl />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/candidates"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <ManageCandidates />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/voters"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <ManageVoters />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/results"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminResults />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/votes"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <Votes />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/blockchain"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <BlockchainMonitor />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </div>
+      {/* Admin Protected Routes under AdminLayout + Sidebar */}
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="elections" element={<ElectionControl />} />
+        <Route path="candidates" element={<ManageCandidates />} />
+        <Route path="voters" element={<ManageVoters />} />
+        <Route path="results" element={<AdminResults />} />
+        <Route path="votes" element={<Votes />} />
+        <Route path="blockchain" element={<BlockchainMonitor />} />
+      </Route>
+    </Routes>
   </BrowserRouter>
 );
 
