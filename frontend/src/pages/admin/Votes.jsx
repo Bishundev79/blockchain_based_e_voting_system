@@ -40,7 +40,7 @@ const Votes = () => {
           <motion.h1 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-4xl font-bold text-white tracking-tight"
+            className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight"
           >
             Ledger Oversight
           </motion.h1>
@@ -48,22 +48,22 @@ const Votes = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-slate-400 mt-2 font-medium"
+            className="text-slate-500 dark:text-slate-400 mt-2 font-medium"
           >
             Audit individual transaction hashes and vote identifiers
           </motion.p>
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.03] border border-white/10 rounded-2xl">
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900/[0.03] border border-slate-200 dark:border-white/10 rounded-2xl">
              <Filter className="w-4 h-4 text-slate-500" />
              <select
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
-                className="bg-transparent text-white text-sm font-bold focus:outline-none appearance-none cursor-pointer"
+                className="bg-transparent text-slate-900 dark:text-white text-sm font-bold focus:outline-none appearance-none cursor-pointer"
               >
                 {[20, 50, 100, 200].map((n) => (
-                  <option key={n} value={n} className="bg-slate-900">Show {n} Records</option>
+                  <option key={n} value={n} className="bg-white dark:bg-slate-900">Show {n} Records</option>
                 ))}
               </select>
           </div>
@@ -92,13 +92,13 @@ const Votes = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative group overflow-hidden"
       >
-        <div className="absolute inset-0 bg-white/[0.03] rounded-3xl" />
-        <div className="absolute inset-0 border border-white/10 rounded-3xl" />
+        <div className="absolute inset-0 bg-white dark:bg-slate-900/[0.03] rounded-3xl" />
+        <div className="absolute inset-0 border border-slate-200 dark:border-white/10 rounded-3xl" />
         
         <div className="relative overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-slate-100 dark:border-white/5">
                 <th className="px-6 py-4 text-slate-500 font-bold uppercase tracking-wider text-[10px]">Reference</th>
                 <th className="px-6 py-4 text-slate-500 font-bold uppercase tracking-wider text-[10px]">Election Context</th>
                 <th className="px-6 py-4 text-slate-500 font-bold uppercase tracking-wider text-[10px]">Transaction Hash</th>
@@ -115,7 +115,7 @@ const Votes = () => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ delay: i * 0.02 }}
-                    className="group/row hover:bg-white/[0.02] transition-colors"
+                    className="group/row hover:bg-white dark:bg-slate-900/[0.02] transition-colors"
                   >
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-3">
@@ -123,18 +123,18 @@ const Votes = () => {
                             <History className="w-4 h-4" />
                          </div>
                          <div>
-                            <p className="font-bold text-white tracking-tight font-mono text-xs">{v.vote_id.slice(0, 16)}...</p>
+                            <p className="font-bold text-slate-900 dark:text-white tracking-tight font-mono text-xs">{v.vote_id.slice(0, 16)}...</p>
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Vote ID</p>
                          </div>
                       </div>
                     </td>
                     <td className="px-6 py-5">
-                      <p className="font-bold text-slate-200">{v.election_name}</p>
+                      <p className="font-bold text-slate-800 dark:text-slate-200">{v.election_name}</p>
                       <p className="text-xs text-sky-400/80 font-medium">Candidate: {v.candidate_name}</p>
                     </td>
                     <td className="px-6 py-5">
                        <div className="flex items-center gap-2 group/hash">
-                         <span className="font-mono text-[10px] text-slate-500 bg-black/20 px-2 py-1 rounded border border-white/5 max-w-[180px] truncate group-hover/hash:text-slate-300 transition-colors">
+                         <span className="font-mono text-[10px] text-slate-500 bg-slate-50 dark:bg-black/20 px-2 py-1 rounded border border-slate-100 dark:border-white/5 max-w-[180px] truncate group-hover/hash:text-slate-700 dark:text-slate-300 transition-colors">
                            {v.tx_hash || "PENDING_CONSOLIDATION"}
                          </span>
                        </div>

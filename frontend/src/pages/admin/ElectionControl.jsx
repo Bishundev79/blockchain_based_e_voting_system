@@ -119,7 +119,7 @@ const ElectionControl = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="group relative overflow-hidden p-6 rounded-3xl bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm dark:shadow-none"
+                className="group relative overflow-hidden p-6 rounded-3xl bg-white dark:bg-slate-900/[0.03] border border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-slate-300 dark:border-white/20 transition-all flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm dark:shadow-none"
               >
                 <div className="flex items-center gap-5 w-full md:w-auto">
                   <div className={`p-4 rounded-2xl ${config.bg} ${config.color}`}>
@@ -146,7 +146,7 @@ const ElectionControl = () => {
                     <button
                       key={s}
                       onClick={() => changeStatus(el.election_id, s)}
-                      className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 transition-all active:scale-95 capitalize"
+                      className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 transition-all active:scale-95 capitalize"
                     >
                       <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
                       Set {s}
@@ -161,7 +161,7 @@ const ElectionControl = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-20 bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-200 dark:border-white/10 rounded-3xl"
+            className="text-center py-20 bg-slate-50 dark:bg-white dark:bg-slate-900/[0.02] border border-dashed border-slate-200 dark:border-white/10 rounded-3xl"
           >
             <Calendar className="w-12 h-12 text-slate-400 dark:text-slate-700 mx-auto mb-4" />
             <p className="text-slate-500 font-medium">No elections found in system storage</p>
@@ -175,7 +175,7 @@ const ElectionControl = () => {
         title="Initialize New Election"
         footer={
           <div className="flex gap-3 justify-end pt-4">
-            <button onClick={() => setShowCreate(false)} className="px-6 py-2.5 text-slate-400 hover:text-white transition-colors font-bold">Cancel</button>
+            <button onClick={() => setShowCreate(false)} className="px-6 py-2.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors font-bold">Cancel</button>
             <button 
               form="create-election-form" 
               type="submit" 
